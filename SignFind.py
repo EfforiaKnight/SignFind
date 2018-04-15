@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import cv2
 import numpy as np
 import argparse
@@ -66,7 +69,11 @@ def verify_signatures(img_ref, img_reg, coordinates):
     img_diff_hsv = cv2.cvtColor(img_diff, cv2.COLOR_BGR2HSV)
     img_diff_thresh = cv2.inRange(img_diff_hsv, lower, upper)
 
-    if np.mean(img_diff_thresh[ymin:ymax, xmin:xmax]) > np.mean(img_diff_thresh):
+    thresh = np.mean(img_diff_thresh) + np.std(img_diff_thresh)
+    sig_value = np.mean(img_diff_thresh[ymin:ymax, xmin:xmax]) + np.std(
+        img_diff_thresh[ymin:ymax, xmin:xmax])
+
+    if sig_value > thresh:
         found_sig = True
 
     cv2.imwrite('img_diff.jpg', img_diff[ymin:ymax, xmin:xmax])
@@ -101,7 +108,8 @@ def read_images(args):
     # Read reference image
     print('Reading reference image: ', args.img_ref)
     img_ref = cv2.imread(args.img_ref, cv2.IMREAD_COLOR)
-    img_ref = cv2.resize(img_ref, (0, 0), fx=0.3, fy=0.3, interpolation=cv2.INTER_AREA)
+    img_ref = cv2.resize(
+        img_ref, (0, 0), fx=0.3, fy=0.3, interpolation=cv2.INTER_AREA)
 
     # Read image to be aligned
     print('Reading image to align: ', args.img)
